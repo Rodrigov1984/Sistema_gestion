@@ -22,7 +22,7 @@ export default function App() {
   const [guardPass, setGuardPass] = useState<string>('');
   const [guardError, setGuardError] = useState<string>('');
 
-  // Inicializar guardias en localStorage si no existen
+  // Inicializar guardias y empleados demo en localStorage si no existen
   useEffect(() => {
     const guardiasStorage = localStorage.getItem('guardias');
     if (!guardiasStorage) {
@@ -47,6 +47,50 @@ export default function App() {
         },
       ];
       localStorage.setItem('guardias', JSON.stringify(guardiasIniciales));
+    }
+
+    // Inicializar empleados demo si no hay nómina cargada
+    const empleadosStorage = localStorage.getItem('empleados');
+    if (!empleadosStorage) {
+      const empleadosDemo = [
+        {
+          id: 1,
+          nombre: 'María Fernández',
+          rut: '16.234.567-8',
+          correo: 'maria.fernandez@demo.cl',
+          tipoContrato: 'Planta',
+          rol: 'Personal de Base',
+          localidad: 'Valparaíso',
+          beneficio: 'Caja de Navidad',
+          estado: 'Pendiente',
+          fechaRetiro: null,
+        },
+        {
+          id: 2,
+          nombre: 'Carlos Muñoz',
+          rut: '18.345.678-9',
+          correo: 'carlos.munoz@demo.cl',
+          tipoContrato: 'Plazo Fijo',
+          rol: 'Oficina',
+          localidad: 'Casablanca',
+          beneficio: 'Caja de Navidad',
+          estado: 'Pendiente',
+          fechaRetiro: null,
+        },
+        {
+          id: 3,
+          nombre: 'Ana Silva',
+          rut: '17.456.789-0',
+          correo: 'ana.silva@demo.cl',
+          tipoContrato: 'Planta',
+          rol: 'Supervisión',
+          localidad: 'Valparaíso',
+          beneficio: 'Caja de Navidad',
+          estado: 'Pendiente',
+          fechaRetiro: null,
+        },
+      ];
+      localStorage.setItem('empleados', JSON.stringify(empleadosDemo));
     }
   }, []);
 
@@ -144,17 +188,12 @@ export default function App() {
             {/* RUTs Demo para pruebas */}
             <div className="mt-4 p-4 bg-red-50 rounded-lg border-2 border-red-200">
               <p className="text-sm font-bold text-red-800 mb-3">👥 RUTs Demo - Empleados</p>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {demoRuts.map((d, i) => (
-                  <div key={d.rut + i} className="bg-white p-3 rounded-lg border-2 border-red-300 shadow-sm">
-                    <p className="font-bold text-gray-800 mb-1">Empleado #{i + 1}</p>
+                  <div key={d.rut + i} className="bg-white p-2 rounded-lg border border-red-300 shadow-sm">
                     <p className="text-sm text-gray-700">
                       <strong>RUT:</strong>{' '}
                       <code className="bg-gray-100 px-2 py-1 rounded text-red-700 font-bold">{d.rut}</code>
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      <strong>Contraseña:</strong>{' '}
-                      <code className="bg-gray-100 px-2 py-1 rounded text-red-700 font-bold">{d.password}</code>
                     </p>
                   </div>
                 ))}
