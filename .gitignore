@@ -1,0 +1,39 @@
+# Node / Vite / React
+node_modules/
+.dist/
+dist/
+build/
+.next/
+.out/
+.tmp/
+.temp/
+.cache/
+.esbuild/
+.vite/
+coverage/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env
+.env
+.env.*
+!.env.example
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Typescript
+*.tsbuildinfo
+
+# Others
+*.local
+.vercel/
+.netlify/
