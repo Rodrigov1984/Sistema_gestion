@@ -126,26 +126,22 @@ export default function App() {
       setUserData(registro);
     };
 
-    // Preparar RUTs demo a mostrar bajo la nota
-    const demoRuts: { rut: string; password: string }[] = (() => {
+    // Preparar RUTs demo a mostrar bajo la nota (primeros 5 empleados de la nómina cargada)
+    const demoRuts: { nombre: string; rut: string }[] = (() => {
       try {
         const raw = localStorage.getItem('empleados');
         if (raw) {
           const list = JSON.parse(raw);
           if (Array.isArray(list) && list.length > 0) {
-            return list.slice(0, 3).map((e: any) => ({
-              rut: e.rut,
-              password: typeof e.rut === 'string' ? e.rut.split('-')[0].replace(/\./g, '') : ''
+            return list.slice(0, 5).map((e: any) => ({
+              nombre: e.nombre || 'Sin nombre',
+              rut: e.rut
             }));
           }
         }
       } catch {}
-      // Fallback si no hay nómina cargada
-      return [
-        { rut: '16.234.567-8', password: '16234567' },
-        { rut: '18.345.678-9', password: '18345678' },
-        { rut: '17.456.789-0', password: '17456789' },
-      ];
+      // Fallback vacío si no hay nómina
+      return [];
     })();
 
     return (
@@ -186,22 +182,27 @@ export default function App() {
               Nota: El RUT debe existir en la nómina cargada por el Administrador.
             </p>
             {/* RUTs Demo para pruebas */}
-            <div className="mt-4 p-4 bg-red-50 rounded-lg border-2 border-red-200">
-              <p className="text-sm font-bold text-red-800 mb-3">👥 RUTs Demo - Empleados</p>
-              <div className="space-y-2">
-                {demoRuts.map((d, i) => (
-                  <div key={d.rut + i} className="bg-white p-2 rounded-lg border border-red-300 shadow-sm">
-                    <p className="text-sm text-gray-700">
-                      <strong>RUT:</strong>{' '}
-                      <code className="bg-gray-100 px-2 py-1 rounded text-red-700 font-bold">{d.rut}</code>
-                    </p>
-                  </div>
-                ))}
+            {demoRuts.length > 0 && (
+              <div className="mt-4 p-4 bg-red-50 rounded-lg border-2 border-red-200">
+                <p className="text-sm font-bold text-red-800 mb-3">👥 Empleados Disponibles para Demo</p>
+                <div className="space-y-2">
+                  {demoRuts.map((d, i) => (
+                    <div key={d.rut + i} className="bg-white p-2 rounded-lg border border-red-300 shadow-sm">
+                      <p className="text-sm text-gray-800">
+                        <strong className="text-gray-900">{d.nombre}</strong>
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        <strong>RUT:</strong>{' '}
+                        <code className="bg-gray-100 px-2 py-1 rounded text-red-700 font-bold">{d.rut}</code>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-red-700 mt-3 font-medium">
+                  ✓ Ingresa uno de estos RUTs arriba para ver la información del empleado.
+                </p>
               </div>
-              <p className="text-xs text-red-700 mt-3 font-medium">
-                ✓ Usa uno de estos RUTs demo o tu RUT real si fuiste cargado en la nómina.
-              </p>
-            </div>
+            )}
           </div>
         </div>
       </div>
