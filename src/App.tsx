@@ -252,6 +252,24 @@ export default function App() {
       setUserData(registro);
     };
 
+    // Preparar guardias demo (activos de localStorage)
+    const demoGuardias: { nombre: string; usuario: string; password: string }[] = (() => {
+      try {
+        const raw = localStorage.getItem('guardias');
+        if (raw) {
+          const list = JSON.parse(raw);
+          if (Array.isArray(list) && list.length > 0) {
+            return list.filter((g: any) => g.activo).slice(0, 3).map((g: any) => ({
+              nombre: g.nombre || 'Sin nombre',
+              usuario: g.usuario || g.rut,
+              password: g.password
+            }));
+          }
+        }
+      } catch {}
+      return [];
+    })();
+
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
@@ -310,6 +328,33 @@ export default function App() {
             <p className="text-xs text-gray-500 mt-1">
               Formato sugerido: Usuario = RUT sin puntos (con guión). La contraseña es la configurada en Gestión de Guardias.
             </p>
+
+            {/* Guardias Demo */}
+            {demoGuardias.length > 0 && (
+              <div className="mt-4 p-4 bg-green-50 rounded-lg border-2 border-green-200">
+                <p className="text-sm font-bold text-green-800 mb-3">👮 Guardias Disponibles para Demo</p>
+                <div className="space-y-2">
+                  {demoGuardias.map((g, i) => (
+                    <div key={g.usuario + i} className="bg-white p-2 rounded-lg border border-green-300 shadow-sm">
+                      <p className="text-sm text-gray-800">
+                        <strong className="text-gray-900">{g.nombre}</strong>
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        <strong>Usuario:</strong>{' '}
+                        <code className="bg-gray-100 px-2 py-1 rounded text-green-700 font-bold">{g.usuario}</code>
+                      </p>
+                      <p className="text-sm text-gray-700">
+                        <strong>Contraseña:</strong>{' '}
+                        <code className="bg-gray-100 px-2 py-1 rounded text-green-700 font-bold">{g.password}</code>
+                      </p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-green-700 mt-3 font-medium">
+                  ✓ Usa una de estas credenciales para acceder al panel de guardia.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

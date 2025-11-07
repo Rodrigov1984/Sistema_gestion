@@ -3,6 +3,7 @@ import { ArrowLeft, Download, QrCode, User, Briefcase, Calendar, Package } from 
 import { Button } from './ui/button';
 import { Card } from './ui/card';
 import QRCode from 'qrcode';
+import logoImg from '../assets/logo.png';
 
 interface EmpleadoDashboardProps {
   onBack: () => void;
@@ -63,16 +64,68 @@ export default function EmpleadoDashboard({ onBack, empleado }: EmpleadoDashboar
     });
 
     try {
-      const url = await QRCode.toDataURL(qrData, {
+      // Generar QR base
+      const qrUrl = await QRCode.toDataURL(qrData, {
         width: 300,
         margin: 2,
         color: { dark: '#D32027', light: '#FFFFFF' },
       });
-      setQrCodeUrl(url);
+
+      // Crear canvas temporal para agregar el logo
+      const tempCanvas = document.createElement('canvas');
+      const tempCtx = tempCanvas.getContext('2d');
+      if (!tempCtx) {
+        setQrCodeUrl(qrUrl);
+        setGeneratingQR(false);
+        return;
+      }
+
+      const qrImage = new Image();
+      qrImage.onload = () => {
+        const logo = new Image();
+        logo.onload = () => {
+          // Configurar tamaño del canvas con espacio para logo arriba
+          const qrSize = 300;
+          const logoHeight = 50;
+          const padding = 15;
+          const spacing = 10; // espacio entre logo y QR
+          
+          tempCanvas.width = qrSize;
+          tempCanvas.height = logoHeight + spacing + qrSize + padding * 2;
+
+          // Fondo blanco
+          tempCtx.fillStyle = '#FFFFFF';
+          tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+          // Dibujar logo centrado arriba con mejor proporción
+          const logoWidth = (logo.width / logo.height) * logoHeight;
+          const logoX = (tempCanvas.width - logoWidth) / 2;
+          tempCtx.drawImage(logo, logoX, padding, logoWidth, logoHeight);
+
+          // Dibujar QR debajo del logo con espacio
+          const qrY = padding + logoHeight + spacing;
+          tempCtx.drawImage(qrImage, 0, qrY, qrSize, qrSize);
+
+          // Convertir a URL
+          setQrCodeUrl(tempCanvas.toDataURL('image/png'));
+          setGeneratingQR(false);
+        };
+        logo.onerror = () => {
+          console.error('Error al cargar el logo');
+          setQrCodeUrl(qrUrl);
+          setGeneratingQR(false);
+        };
+        logo.src = logoImg;
+      };
+      qrImage.onerror = () => {
+        console.error('Error al cargar QR');
+        alert('Error al generar el código QR.');
+        setGeneratingQR(false);
+      };
+      qrImage.src = qrUrl;
     } catch (error) {
       console.error('Error generando QR:', error);
       alert('Error al generar el código QR.');
-    } finally {
       setGeneratingQR(false);
     }
   };
@@ -86,107 +139,128 @@ export default function EmpleadoDashboard({ onBack, empleado }: EmpleadoDashboar
     const qrImage = new Image();
     qrImage.crossOrigin = 'anonymous';
     qrImage.onload = () => {
-      try {
-        canvas.width = 800;
-        canvas.height = 1100;
+      // Cargar también el logo
+      const logo = new Image();
+      logo.crossOrigin = 'anonymous';
+      logo.onload = () => {
+        try {
+          canvas.width = 800;
+          canvas.height = 1100;
 
-        // Fondo blanco
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+          // Fondo blanco
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // Borde y títulos
-        ctx.strokeStyle = '#D32027';
-        ctx.lineWidth = 6;
-        ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
-        ctx.fillStyle = '#D32027';
-        ctx.font = 'bold 32px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('Sistema de Gestión de Beneficios', canvas.width / 2, 70);
-        ctx.font = 'bold 20px Arial';
-        ctx.fillStyle = '#666666';
-        ctx.fillText('Tresmontes Lucchetti', canvas.width / 2, 100);
+          // Borde
+          ctx.strokeStyle = '#D32027';
+          ctx.lineWidth = 6;
+          ctx.strokeRect(15, 15, canvas.width - 30, canvas.height - 30);
 
-        // Línea divisoria
-        ctx.beginPath();
-        ctx.moveTo(60, 130);
-        ctx.lineTo(canvas.width - 60, 130);
-        ctx.strokeStyle = '#E5E5E5';
-        ctx.lineWidth = 3;
-        ctx.stroke();
+          // Logo en la parte superior centrado
+          const logoHeight = 80;
+          const logoWidth = (logo.width / logo.height) * logoHeight;
+          const logoX = (canvas.width - logoWidth) / 2;
+          ctx.drawImage(logo, logoX, 35, logoWidth, logoHeight);
 
-        // Título QR
-        let yPos = 180;
-        ctx.fillStyle = '#D32027';
-        ctx.font = 'bold 24px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('CÓDIGO QR PARA RETIRO', canvas.width / 2, yPos);
-        yPos += 50;
+          // Títulos debajo del logo
+          let yPos = 35 + logoHeight + 20;
+          ctx.fillStyle = '#D32027';
+          ctx.font = 'bold 28px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('Sistema de Gestión de Beneficios', canvas.width / 2, yPos);
+          yPos += 30;
+          ctx.font = 'bold 18px Arial';
+          ctx.fillStyle = '#666666';
+          ctx.fillText('Tresmontes Lucchetti', canvas.width / 2, yPos);
+          yPos += 10;
 
-        // QR
-        const qrSize = 350;
-        const qrX = (canvas.width - qrSize) / 2;
-        const qrY = yPos;
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(qrX - 20, qrY - 20, qrSize + 40, qrSize + 40);
-        ctx.strokeStyle = '#D32027';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(qrX - 20, qrY - 20, qrSize + 40, qrSize + 40);
-        ctx.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
+          // Línea divisoria
+          ctx.beginPath();
+          ctx.moveTo(60, yPos + 10);
+          ctx.lineTo(canvas.width - 60, yPos + 10);
+          ctx.strokeStyle = '#E5E5E5';
+          ctx.lineWidth = 3;
+          ctx.stroke();
 
-        // Texto debajo QR
-        yPos = qrY + qrSize + 50;
-        ctx.fillStyle = '#008C45';
-        ctx.font = 'bold 16px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('Presenta este código en portería para retirar tu beneficio', canvas.width / 2, yPos);
+          // Título QR
+          yPos += 50;
+          ctx.fillStyle = '#D32027';
+          ctx.font = 'bold 24px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('CÓDIGO QR PARA RETIRO', canvas.width / 2, yPos);
+          yPos += 50;
 
-        // Línea
-        yPos += 40;
-        ctx.beginPath();
-        ctx.moveTo(60, yPos);
-        ctx.lineTo(canvas.width - 60, yPos);
-        ctx.strokeStyle = '#E5E5E5';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        yPos += 40;
+          // QR
+          const qrSize = 350;
+          const qrX = (canvas.width - qrSize) / 2;
+          const qrY = yPos;
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(qrX - 20, qrY - 20, qrSize + 40, qrSize + 40);
+          ctx.strokeStyle = '#D32027';
+          ctx.lineWidth = 4;
+          ctx.strokeRect(qrX - 20, qrY - 20, qrSize + 40, qrSize + 40);
+          ctx.drawImage(qrImage, qrX, qrY, qrSize, qrSize);
 
-        // Información del empleado
-        ctx.fillStyle = '#D32027';
-        ctx.font = 'bold 20px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('INFORMACIÓN DEL EMPLEADO', canvas.width / 2, yPos);
-        yPos += 35;
+          // Texto debajo QR
+          yPos = qrY + qrSize + 50;
+          ctx.fillStyle = '#008C45';
+          ctx.font = 'bold 16px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('Presenta este código en portería para retirar tu beneficio', canvas.width / 2, yPos);
 
-        const lineHeight = 28;
-        ctx.fillStyle = '#333333';
-        ctx.font = '16px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText(`${view.nombre} • ${view.rut}`, canvas.width / 2, yPos);
-        yPos += lineHeight;
-        ctx.fillText(`${view.cargo} • ${view.tipoContrato}`, canvas.width / 2, yPos);
-        yPos += lineHeight;
-        ctx.fillText(`${view.beneficioAsignado} • ${view.tipoCaja}`, canvas.width / 2, yPos);
-        yPos += lineHeight;
-        ctx.fillStyle = '#D32027';
-        ctx.font = 'bold 16px Arial';
-        ctx.fillText(`Fecha Límite: ${view.fechaLimite}`, canvas.width / 2, yPos);
+          // Línea
+          yPos += 40;
+          ctx.beginPath();
+          ctx.moveTo(60, yPos);
+          ctx.lineTo(canvas.width - 60, yPos);
+          ctx.strokeStyle = '#E5E5E5';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          yPos += 40;
 
-        // Pie
-        yPos = canvas.height - 50;
-        ctx.font = '14px Arial';
-        ctx.fillStyle = '#999999';
-        const fechaGeneracion = new Date().toLocaleString('es-CL');
-        ctx.fillText(`Generado el: ${fechaGeneracion}`, canvas.width / 2, yPos);
+          // Información del empleado
+          ctx.fillStyle = '#D32027';
+          ctx.font = 'bold 20px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('INFORMACIÓN DEL EMPLEADO', canvas.width / 2, yPos);
+          yPos += 35;
 
-        // Descargar
-        const link = document.createElement('a');
-        link.download = `QR-Beneficio-${view.rut.replace(/\./g, '')}-${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png', 1.0);
-        link.click();
-      } catch (error) {
-        console.error('Error al generar la imagen:', error);
-        alert('Error al generar la imagen. Por favor, intenta de nuevo.');
-      }
+          const lineHeight = 28;
+          ctx.fillStyle = '#333333';
+          ctx.font = '16px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText(`${view.nombre} • ${view.rut}`, canvas.width / 2, yPos);
+          yPos += lineHeight;
+          ctx.fillText(`${view.cargo} • ${view.tipoContrato}`, canvas.width / 2, yPos);
+          yPos += lineHeight;
+          ctx.fillText(`${view.beneficioAsignado} • ${view.tipoCaja}`, canvas.width / 2, yPos);
+          yPos += lineHeight;
+          ctx.fillStyle = '#D32027';
+          ctx.font = 'bold 16px Arial';
+          ctx.fillText(`Fecha Límite: ${view.fechaLimite}`, canvas.width / 2, yPos);
+
+          // Pie
+          yPos = canvas.height - 50;
+          ctx.font = '14px Arial';
+          ctx.fillStyle = '#999999';
+          const fechaGeneracion = new Date().toLocaleString('es-CL');
+          ctx.fillText(`Generado el: ${fechaGeneracion}`, canvas.width / 2, yPos);
+
+          // Descargar
+          const link = document.createElement('a');
+          link.download = `QR-Beneficio-${view.rut.replace(/\./g, '')}-${Date.now()}.png`;
+          link.href = canvas.toDataURL('image/png', 1.0);
+          link.click();
+        } catch (error) {
+          console.error('Error al generar la imagen:', error);
+          alert('Error al generar la imagen. Por favor, intenta de nuevo.');
+        }
+      };
+      logo.onerror = () => {
+        console.error('Error al cargar el logo');
+        alert('Error al cargar el logo. Continuando sin logo.');
+      };
+      logo.src = logoImg;
     };
     qrImage.onerror = () => {
       console.error('Error al cargar la imagen del QR');
@@ -350,10 +424,10 @@ export default function EmpleadoDashboard({ onBack, empleado }: EmpleadoDashboar
                   </div>
 
                   <div className="flex flex-col items-center justify-center">
-                    <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
-                      <img src={qrCodeUrl} alt="Código QR" className="w-64 h-64" />
+                    <div className="bg-white p-3 rounded-xl shadow-lg border-2 border-gray-200">
+                      <img src={qrCodeUrl} alt="Código QR" className="w-full h-auto max-w-[280px]" />
                     </div>
-                    <p className="text-sm text-gray-600 mt-3 text-center">Código QR para retiro</p>
+                    <p className="text-sm text-gray-600 mt-3 text-center font-medium">Código QR para retiro</p>
                   </div>
                 </div>
 

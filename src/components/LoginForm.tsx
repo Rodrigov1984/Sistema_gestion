@@ -240,11 +240,21 @@ export default function LoginForm({ role, onLoginSuccess, onBack }: LoginFormPro
         )}
 
         {role === 'admin' && (
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600">
-              <strong>Credenciales de administrador:</strong>
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg border-2 border-gray-300">
+            <p className="text-sm font-bold text-gray-800 mb-3">🔑 Usuario Demo - Administrador</p>
+            <div className="bg-white p-3 rounded-lg border-2 border-gray-400 shadow-sm">
+              <p className="text-sm text-gray-700 mb-2">
+                <strong>Usuario:</strong>{' '}
+                <code className="bg-gray-100 px-2 py-1 rounded text-gray-800 font-bold">admin</code>
+              </p>
+              <p className="text-sm text-gray-700">
+                <strong>Contraseña:</strong>{' '}
+                <code className="bg-gray-100 px-2 py-1 rounded text-gray-800 font-bold">123456</code>
+              </p>
+            </div>
+            <p className="text-xs text-gray-600 mt-3 font-medium">
+              ✓ Usa estas credenciales para acceder al panel de administración.
             </p>
-            <p className="text-xs text-gray-500 mt-1">Usuario: admin | Contraseña: 123456</p>
           </div>
         )}
 

@@ -5,6 +5,7 @@ import { Card } from './ui/card';
 import { Input } from './ui/input';
 import { Alert, AlertDescription } from './ui/alert';
 import jsQR from 'jsqr';
+import logoImg from '../assets/logo.png';
 
 interface GuardiaDashboardProps {
   onBack: () => void;
@@ -375,58 +376,79 @@ export default function GuardiaDashboard({ onBack, guardia }: GuardiaDashboardPr
         {/* Panel de Validación */}
         {trabajadorActual && (
           <Card className="p-6 mb-6 bg-white shadow-md rounded-xl">
-            <h2 className="text-[#D32027] mb-6">Información del Trabajador</h2>
+            {/* Logo en la parte superior */}
+            <div className="flex justify-center mb-6">
+              <img src={logoImg} alt="Logo Empresa" className="h-16 object-contain" />
+            </div>
+
+            <h2 className="text-[#D32027] mb-6 text-center">Información del Trabajador</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              <div>
-                <label className="text-gray-600 block mb-1">Nombre Completo</label>
-                <div className="flex items-center gap-2">
-                  <UserIcon className="w-4 h-4 text-[#008C45]" />
-                  <p className="text-gray-900">{trabajadorActual.nombre}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              {/* Datos del trabajador (2/3 del espacio) */}
+              <div className="md:col-span-2 space-y-4">
+                <div>
+                  <label className="text-gray-600 block mb-1 font-medium">Nombre Completo</label>
+                  <div className="flex items-center gap-2 bg-gray-50 p-3 rounded-lg">
+                    <UserIcon className="w-4 h-4 text-[#008C45]" />
+                    <p className="text-gray-900 font-medium">{trabajadorActual.nombre}</p>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-gray-600 block mb-1 font-medium">RUT</label>
+                  <div className="bg-gray-50 p-3 rounded-lg">
+                    <p className="text-gray-900 font-mono font-bold">{trabajadorActual.rut}</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-gray-600 block mb-1 font-medium">Tipo de Contrato</label>
+                    <span className={`inline-block px-4 py-2 rounded-lg font-medium ${
+                      trabajadorActual.tipoContrato === 'Planta'
+                        ? 'bg-[#008C45]/20 text-[#008C45]'
+                        : 'bg-[#D32027]/20 text-[#D32027]'
+                    }`}>
+                      {trabajadorActual.tipoContrato}
+                    </span>
+                  </div>
+                  <div>
+                    <label className="text-gray-600 block mb-1 font-medium">Tipo de Caja</label>
+                    <div className="flex items-center gap-2 bg-gray-50 p-3 rounded-lg">
+                      <Package className="w-4 h-4 text-[#008C45]" />
+                      <p className="text-gray-900 font-medium">
+                        {trabajadorActual.tipoContrato === 'Planta' ? 'Caja Grande' : 'Caja Estándar'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="text-gray-600 block mb-1">RUT</label>
-                <p className="text-gray-900">{trabajadorActual.rut}</p>
-              </div>
-              <div>
-                <label className="text-gray-600 block mb-1">Tipo de Contrato</label>
-                <span className={`inline-block px-3 py-1 rounded-full ${
-                  trabajadorActual.tipoContrato === 'Planta'
-                    ? 'bg-[#008C45]/20 text-[#008C45]'
-                    : 'bg-[#D32027]/20 text-[#D32027]'
-                }`}>
-                  {trabajadorActual.tipoContrato}
-                </span>
-              </div>
-              <div>
-                <label className="text-gray-600 block mb-1">Tipo de Caja</label>
-                <div className="flex items-center gap-2">
-                  <Package className="w-4 h-4 text-[#008C45]" />
-                  <p className="text-gray-900">
-                    {trabajadorActual.tipoContrato === 'Planta' ? 'Caja Grande' : 'Caja Estándar'}
-                  </p>
+
+              {/* Foto del trabajador (1/3 del espacio - lado derecho) */}
+              <div className="flex flex-col items-end justify-start">
+                <div className="w-full aspect-square max-w-[300px] bg-gray-100 rounded-lg border-2 border-gray-300 flex items-center justify-center overflow-hidden mb-2">
+                  <UserIcon className="w-32 h-32 text-gray-400" />
+                  {/* Placeholder para foto del trabajador */}
                 </div>
+                <p className="text-sm text-gray-500 text-right font-medium">Foto del Trabajador</p>
               </div>
             </div>
 
             <div className={`rounded-lg p-4 mb-6 ${
               trabajadorActual.retirado 
-                ? 'bg-red-50 border border-red-200' 
-                : 'bg-green-50 border border-green-200'
+                ? 'bg-red-50 border-2 border-red-300' 
+                : 'bg-green-50 border-2 border-green-300'
             }`}>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 justify-center">
                 {trabajadorActual.retirado ? (
                   <>
-                    <XCircle className="w-5 h-5 text-red-600" />
-                    <span className="text-red-700">
+                    <XCircle className="w-6 h-6 text-red-600" />
+                    <span className="text-red-700 font-medium">
                       Beneficio ya retirado {trabajadorActual.fechaRetiro ? `el ${trabajadorActual.fechaRetiro}` : ''}
                     </span>
                   </>
                 ) : (
                   <>
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <span className="text-green-700">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                    <span className="text-green-700 font-medium">
                       Beneficio disponible para retiro
                     </span>
                   </>
@@ -438,7 +460,7 @@ export default function GuardiaDashboard({ onBack, guardia }: GuardiaDashboardPr
               <Button
                 onClick={confirmarEntrega}
                 disabled={trabajadorActual.retirado}
-                className="flex-1 bg-[#008C45] hover:bg-[#008C45]/90 text-white disabled:bg-gray-300 disabled:cursor-not-allowed h-12"
+                className="flex-1 bg-[#008C45] hover:bg-[#008C45]/90 text-white disabled:bg-gray-300 disabled:cursor-not-allowed h-12 font-medium"
               >
                 <CheckCircle className="w-5 h-5 mr-2" />
                 Confirmar Entrega
@@ -450,7 +472,7 @@ export default function GuardiaDashboard({ onBack, guardia }: GuardiaDashboardPr
                   setMensaje(null);
                 }}
                 variant="outline"
-                className="border-gray-400 text-gray-700 hover:bg-gray-100"
+                className="border-gray-400 text-gray-700 hover:bg-gray-100 h-12"
               >
                 Cancelar
               </Button>
