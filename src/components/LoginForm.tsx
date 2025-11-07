@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { FormEvent, ChangeEvent } from 'react';
 import { User, Shield, Settings, Eye, EyeOff } from 'lucide-react';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
@@ -20,11 +21,7 @@ const empleados = {
   '17456789-0': { nombre: 'Ana María Silva', password: '17456789', rol: 'Oficina' },
 };
 
-const guardias = {
-  '15123456-7': { nombre: 'Juan Pérez', password: '15123456', rol: 'Guardia' },
-  '16234567-8': { nombre: 'Pedro González', password: '16234567', rol: 'Guardia' },
-  '14567890-1': { nombre: 'Luis Martínez', password: '14567890', rol: 'Guardia' },
-};
+// Nota: Los guardias de demo ahora se muestran desde el enrolamiento del administrador en localStorage.
 
 export default function LoginForm({ role, onLoginSuccess, onBack }: LoginFormProps) {
   const [username, setUsername] = useState('');
@@ -32,6 +29,29 @@ export default function LoginForm({ role, onLoginSuccess, onBack }: LoginFormPro
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Preparar listado demo de empleados (dinámico desde localStorage si existe, fallback a mock estático)
+  const demoEmpleados = (() => {
+    try {
+      const stored = localStorage.getItem('empleados');
+      if (stored) {
+        const list = JSON.parse(stored);
+        if (Array.isArray(list) && list.length > 0) {
+          return list.slice(0, 3).map((e: any) => ({
+            rut: e.rut,
+            password: (e.rut && typeof e.rut === 'string') ? e.rut.split('-')[0] : ''
+          }));
+        }
+      }
+    } catch (err) {
+      // Silenciar errores de parseo
+    }
+    // Fallback a mock local si no hay empleados en storage
+    return Object.keys(empleados).map(rut => ({
+      rut,
+      password: rut.split('-')[0]
+    }));
+  })();
 
   const getRoleConfig = () => {
     switch (role) {
@@ -65,7 +85,7 @@ export default function LoginForm({ role, onLoginSuccess, onBack }: LoginFormPro
   const config = getRoleConfig();
   const Icon = config.icon;
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = (e: FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
@@ -131,7 +151,7 @@ export default function LoginForm({ role, onLoginSuccess, onBack }: LoginFormPro
             <Input
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
               placeholder={config.usernamePlaceholder}
               className="w-full"
               required
@@ -144,7 +164,7 @@ export default function LoginForm({ role, onLoginSuccess, onBack }: LoginFormPro
               <Input
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                 placeholder="Ingresa tu contraseña"
                 className="w-full pr-10"
                 required
@@ -192,6 +212,30 @@ export default function LoginForm({ role, onLoginSuccess, onBack }: LoginFormPro
                 Ejemplo: RUT 16234567-8 → Contraseña: 16234567
               </li>
             </ul>
+          </div>
+        )}
+
+        {role === 'empleado' && (
+          <div className="mt-6 p-4 bg-red-50 rounded-lg border-2 border-red-200">
+            <p className="text-sm font-bold text-red-800 mb-3">👥 RUTs Demo - Empleados</p>
+            <div className="space-y-3">
+              {demoEmpleados.map((emp, idx) => (
+                <div key={emp.rut + idx} className="bg-white p-3 rounded-lg border-2 border-red-300 shadow-sm">
+                  <p className="font-bold text-gray-800 mb-1">Empleado #{idx + 1}</p>
+                  <p className="text-sm text-gray-700">
+                    <strong>RUT:</strong>{' '}
+                    <code className="bg-gray-100 px-2 py-1 rounded text-red-700 font-bold">{emp.rut}</code>
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    <strong>Contraseña:</strong>{' '}
+                    <code className="bg-gray-100 px-2 py-1 rounded text-red-700 font-bold">{emp.password}</code>
+                  </p>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-red-700 mt-3 font-medium">
+              ✓ Usa uno de estos RUTs demo o tu RUT real si fuiste cargado en la nómina.
+            </p>
           </div>
         )}
 
